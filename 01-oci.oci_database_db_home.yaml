@@ -1,0 +1,104 @@
+##https://docs.oracle.com/en-us/iaas/tools/oci-ansible-collection/4.40.0/collections/oracle/oci/oci_database_db_home_module.html
+
+- name: Fetches_details_about_one_or_multiple_Database_resources_in_Oracle_Cloud_Infrastructure
+  collections:
+  - oracle.oci
+  connection: local
+  hosts: localhost
+  vars_files:
+  - default_database.yaml
+  tasks:
+
+  - name: Prevent run without tags
+    fail: msg="You must run this playbook with tags!"
+
+  - name: dump variables DB creation
+
+    debug:
+      msg: '{{ region }} |{{ vm_cluster_id | default(omit) }} | {{ compartment_id| default(omit)}} | {{ db_version | default(omit)}}  '
+    tags:
+    - Dump-vars
+
+  - name: Create_db_home_with_source_VM_CLUSTER_NEW
+    oci_database_db_home:
+      # required
+      source: VM_CLUSTER_NEW
+      compartment_id: "{{ compartment_id}}"
+      vm_cluster_id: "{{ vm_cluster_id  }}"
+
+      # optional
+      display_name: "{{ display_name}}"
+      kms_key_id: "{{ kms_key_id }}"
+      kms_key_version_id: "{{ kms_key_version_id | default(omit) }}"
+      database_software_image_id: "{{ database_software_image_id | default(omit) }}"
+      is_desupported_version: true
+      db_version: "{{ db_version}}"
+    register: result
+    tags:
+    - Create_db_home_with_source_VM_CLUSTER_NEW
+
+  - name: Update_db_home
+
+    oci_database_db_home:
+      # required
+      db_home_id: "{{ db_home_id }}"
+
+      # optional
+      patch_details:
+        # optional
+        patch_id: "{{ patch_id  }}"
+        database_software_image_id: "{{ database_software_image_id  }}"
+        action: APPLY
+      one_off_patches: ["one_off_patches_example"]
+    register: result
+    tags:
+    - Update_db_home_using_name_OCI_USE_NAME_AS_IDENTIFIER
+
+  - name: Update_db_home_using_name_OCI_USE_NAME_AS_IDENTIFIER
+
+    oci_database_db_home:
+      # required
+      display_name: "{ display_name}}"
+      compartment_id: "{{ compartment_id  }}"
+
+      # optional
+      patch_details:
+        # optional
+        patch_id: "{{ patch_id  }}"
+        database_software_image_id: "{{ database_software_image_id  }}"
+        action: APPLY
+      one_off_patches: ["one_off_patches_example"]
+    register: result
+    tags:
+    - Update_db_home_using_name_OCI_USE_NAME_AS_IDENTIFIER
+
+  - name: Delete_db_home
+
+
+
+    oci_database_db_home:
+      # required
+      db_home_id: "{{ db_home_id }}"
+      state: absent
+
+      # optional
+      perform_final_backup: false
+    register: result
+    tags:
+    - Delete_db_home
+
+  - name: Delete_db_home_using_name_OCI_USE_NAME_AS_IDENTIFIER
+    oci_database_db_home:
+      # required
+      display_name: "{{ display_name}}"
+      compartment_id: "{{ compartment_id  }}"
+      state: absent
+    register: result
+    tags:
+    - Delete_db_home_using_name_OCI_USE_NAME_AS_IDENTIFIER
+
+  - name: Dump result from Dbservers facts
+    debug:
+      msg: '{{ result }}'
+    tags:
+    - dbg-Create-DB

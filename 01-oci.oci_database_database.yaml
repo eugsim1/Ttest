@@ -1,0 +1,105 @@
+### https://docs.oracle.com/en-us/iaas/tools/oci-ansible-collection/4.40.0/collections/oracle/oci/oci_database_database_module.html?highlight=oci_database_database
+### https://github.com/oracle/oci-ansible-collection
+### 01-oci.oci_database_database.yaml
+
+- name: Create database with source = NONE
+  collections:
+  - oracle.oci
+  connection: local
+  hosts: localhost
+  vars_files:
+  - default_database.yaml
+  tasks:
+
+  - name: Prevent run without tags
+    fail: msg="You must run this playbook with tags!"
+
+  - name: dump variables DB creation
+
+    debug:
+      msg: '{{ region }}  | {{ kms_key_id | default(omit)  }}  '
+    tags:
+    - Dump-vars
+
+  - name: Create database with source = NONE
+    oracle.oci.oci_database_database:
+      compartment_id: "{{ compartment_id }}"
+      # required
+      database:
+        # required
+        admin_password: "{{ admin_password }}"
+        character_set: "{{ character_set | default(omit) }}"
+        ncharacter_set: "{{ ncharacter_set| default(omit) }}"
+        db_name: "{{ db_name  }}"
+        db_unique_name: "{{ db_unique_name  }}"
+        db_workload: "{{ db_workload  }}"
+        freeform_tags: {'Department': 'Finance'}
+        ##                  defined_tags: {'Operations': {'CostCenter': 'US'}}
+        kms_key_id: "{{ kms_key_id }}"
+        pdb_name: "{{ pdb_name }}"
+        sid_prefix: "{{ sid_prefix }}"
+        tde_wallet_password: "{{ admin_password | default(omit)  }}"
+      db_home_id: "{{ db_home_id | default(omit) }}"
+
+      # optional
+      db_version: "{{ db_version | default(omit) }}"
+      source: NONE
+##      kms_key_id: "{{ kms_key_id | default(omit)  }}"
+##      kms_key_version_id: "{{kms_key_version_id | default(omit)  }}"
+##     display_name: "{{ display_name | default(omit) }}"
+      is_desupported_version: "{{ is_desupported_version | default(omit) }}"
+      state: present
+    register: result
+    tags:
+    - Create-DB_NONE
+
+  - name: Update database
+    oci_database_database:
+      # required
+      database_id: "{{ database_id }}"
+
+      # optional
+      db_backup_config:
+        # optional
+        auto_backup_enabled: true
+        recovery_window_in_days: 56
+        auto_backup_window: SLOT_ONE
+        auto_full_backup_window: SLOT_ONE
+        auto_full_backup_day: SUNDAY
+        run_immediate_full_backup: true
+        backup_destination_details:
+        - # required
+          type: NFS
+
+          # optional
+          id: "{{ NFS_id  }}"
+          vpc_user: vpc_user_example
+          vpc_password: "{{  admin_password  }}"
+          internet_proxy: internet_proxy_example
+          dbrs_policy_id: "ocid1.dbrspolicy.oc1..xxxxxxEXAMPLExxxxxx"
+        backup_deletion_policy: DELETE_IMMEDIATELY
+      db_home_id: "{{ db_home_id  }}"
+      new_admin_password: "{{  admin_password  }}"
+      old_tde_wallet_password: "{{  admin_password  }}"
+      new_tde_wallet_password: "{{  admin_password  }}"
+      freeform_tags: {'Department': 'Finance'}
+      defined_tags: {'Operations': {'CostCenter': 'US'}}
+    register: result
+    tags:
+    - Update_database
+
+  - name: Delete database
+    oracle.oci.oci_database_database:
+      # required
+      database_id: "{{ database_id  }}"
+      state: absent
+      perform_final_backup: "{{  perform_final_backup |  default(omit)  }}"
+    register: result
+    tags:
+    - Delete_database
+
+  - name: Dump result from database
+    debug:
+      msg: '{{ result }}'
+    tags:
+    - dbg-DB
