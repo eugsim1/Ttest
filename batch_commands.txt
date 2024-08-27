@@ -1,0 +1,83 @@
+### create database and new home
+cd /home/oracle/exacs-scripting
+source exacs.env
+
+cd /home/oracle/oci4cca-managment/services/database/database
+
+export vmClusterId=""
+export compartment_id="$EXA_VM_COMPARTMENT_ID"
+export display_name="esans1"
+export kms_key_id=""
+export ADMIN_PASSWORD=
+export DB_NAME=dbmgt1
+export dbVersion="19.24.0.0"
+export dbWorkload=OLTP
+export pdbName=PDB1
+
+
+ansible-playbook /home/oracle/oci4cca-managment/services/database/database/01-oci.oci_database_db_home.yaml -vv \
+--tags "Dump-vars" \
+--tags "Create_db_home_with_source_VM_CLUSTER_NEW" \
+--tags "dbg-DB" \
+--extra-vars="vm_cluster_id=$vmClusterId" \
+--extra-vars="compartment_id=$compartment_id" \
+--extra-vars="display_name=$display_name"  \
+--extra-vars="kms_key_id=$kms_key_id" \
+--extra-vars="db_version=$dbVersion" 
+
+
+### create database
+export compartment_id="$EXA_VM_COMPARTMENT_ID"
+export db_system_id=$vmClusterId
+export db_home_id=""
+export admin_password="BEStrong1234##"
+export pluggable_databases="pdb1"
+export character_set="AL32UTF8"
+export ncharacter_set="AL16UTF16" 
+export db_workload="OLTP"
+export db_unique_name="eug1"
+export db_name="eug1"
+export sid_prefix="eug1"
+export db_version="19.24.0.0"
+export kms_key_id=""
+export pdb_name="tst1"
+export display_name="tst1"
+
+ansible-playbook /home/oracle/oci4cca-managment/services/database/database/01-oci.oci_database_database.yaml -vv \
+--tags "Dump-vars" \
+--tags "Create-DB_NONE" \
+--tags "dbg-DB" \
+--extra-vars="compartment_id=$compartment_id" \
+--extra-vars="db_home_id=$db_home_id" \
+--extra-vars="db_system_id=$db_system_id" \
+--extra-vars="admin_password=$admin_password" \
+--extra-vars="ncharacter_set=$ncharacter_set" \
+--extra-vars="character_set=$character_set" \
+--extra-vars="db_name=$db_name" \
+--extra-vars="db_unique_name=$db_unique_name" \
+--extra-vars="db_workload=$db_workload" \
+--extra-vars="kms_key_id=$kms_key_id" \
+--extra-vars="pdb_name=$pdb_name" \
+--extra-vars="sid_prefix=$sid_prefix" \
+--extra-vars="db_version=$db_version" \
+--extra-vars="tde_wallet_password=$admin_password" \
+--extra-vars="display_name=$display_name" 
+
+
+### delete database
+
+export database_id="""
+ansible-playbook /home/oracle/oci4cca-managment/services/database/database/01-oci.oci_database_database.yaml -vv \
+--tags "Dump-vars" \
+--tags "Delete_database" \
+--tags "dbg-DB" \
+--extra-vars="database_id=$database_id" 
+
+### delete database home
+export db_home_id=""
+
+ansible-playbook /home/oracle/oci4cca-managment/services/database/database/01-oci.oci_database_db_home.yaml -vv \
+--tags "Dump-vars" \
+--tags "Delete_db_home" \
+--tags "dbg-DB" \
+--extra-vars="db_home_id=$db_home_id" 
